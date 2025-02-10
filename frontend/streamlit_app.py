@@ -91,7 +91,7 @@ if upload_option == "Upload Video File":
                     st.error(f"Error uploading video: {str(e)}")
 
 else:  # YouTube URL
-    youtube_url = st.text_input("Enter YouTube URL")
+    youtube_url = st.text_input("Enter YouTube URL", value="https://www.youtube.com/watch?v=9RQ8r2fI-D0")
     if youtube_url:
         title = st.text_input("Video Title", "YouTube Video")
         description = st.text_area("Description", "Курчата")

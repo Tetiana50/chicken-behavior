@@ -2,32 +2,53 @@ version: '3.8'
 
 services:
   api:
-    build: .
-    command: api
+    build:
+      context: .
+      target: api
     ports:
       - "8000:8000"
     volumes:
-      - ./storage:/app/storage
+      - storage:/app/storage
     environment:
       - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
 
   frontend:
-    build: .
-    command: frontend
+    build:
+      context: .
+      target: frontend
     ports:
       - "8501:8501"
     volumes:
-      - ./storage:/app/storage
+      - storage:/app/storage
     environment:
       - PYTHONPATH=/app
+      - API_URL=http://api:8000/api/v1
     depends_on:
       api:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
 
 volumes:
-  storage: 
+  storage:
+    driver: local 
