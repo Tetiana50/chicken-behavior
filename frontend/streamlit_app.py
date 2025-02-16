@@ -37,14 +37,21 @@ def get_video_frames(video_id):
     response = requests.get(f"{API_URL}/videos/{video_id}/frames")
     return response.json()
 
-def analyze_frames(video_id, frame_ids, sequence_prompt, description, messages):
+def analyze_frames(session_state, frame_ids, sequence_prompt, description):
+    video_id = session_state.video_id
+    messages = session_state.messages
+    model = session_state.model
+    language = session_state.language
+    
     data = {
         "video_id": video_id,
         "frame_ids": frame_ids,
         "analysis_type": "default",
         "sequence_prompt": sequence_prompt,
         "description": description,
-        "messages": messages
+        "messages": messages,
+        "model": model,
+        "language": language
     }
     print("data", data)
     response = requests.post(f"{API_URL}/frames/analyze", json=data)
@@ -67,9 +74,31 @@ frame_interval = st.sidebar.number_input(
     value=10,
     help="Extract one frame every X seconds"
 )
-
-# Store frame interval in session state to use during processing
+# Store language in session state
 st.session_state.frame_interval = frame_interval
+
+
+# Add language selection
+language = st.sidebar.selectbox(
+    "Select language",
+    ("Ukrainian", "English"),
+    help="Choose the language for analysis results"
+)
+
+# Store language in session state
+st.session_state.language = language
+
+# Add model selection
+model = st.sidebar.selectbox(
+    "Select model",
+    ("gpt-4o-mini", "gpt-4o"),
+    help="Choose  LLMmodel for analysis"
+)
+
+# Store model in session state
+st.session_state.model = model
+
+
 
 if upload_option == "Upload Video File":
     uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "avi", "mov"])
@@ -124,9 +153,10 @@ if "video_id" in st.session_state:
         frames = get_video_frames(st.session_state.video_id)
 
         # Display frames in a grid
-        cols = st.columns(4)
+        columns = 5
+        cols = st.columns(columns)
         for idx, frame_path in enumerate(frames):
-            with cols[idx % 4]:
+            with cols[idx % columns]:
                 st.image(frame_path, caption=f"Frame {idx + 1}")
         
         # Initialize chat history in session state if it doesn't exist
@@ -150,7 +180,7 @@ if "video_id" in st.session_state:
             with st.chat_message("assistant"):
                 with st.spinner("Analyzing ..."):
                     frame_ids = [Path(frame).stem.split("_")[1] for frame in frames]
-                    analysis_results = analyze_frames(st.session_state.video_id, frame_ids, prompt, description, st.session_state.messages)
+                    analysis_results = analyze_frames(st.session_state, frame_ids, prompt, description)
                     
                     if analysis_results.get("status") == "success":
                         analysis_text = analysis_results["sequence_analysis"]

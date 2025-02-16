@@ -76,7 +76,7 @@ class OpenAIService:
         try:
             # Create default sequence prompt if none provided
             if not batch_analysis.sequence_prompt:
-                sequence_prompt = "What are in these images? Analyze the sequence of frames and describe any changes, patterns, or notable differences between them. Focus on movement, behavior, and significant changes over time. Translate results to Ukrainian."
+                sequence_prompt = f"What are in these images? Analyze the sequence of frames and describe any changes, patterns, or notable differences between them. Focus on movement, behavior, and significant changes over time."
             else:
                 sequence_prompt = batch_analysis.sequence_prompt
 
@@ -85,7 +85,7 @@ class OpenAIService:
                      f"Analyze the sequence of video frames.\n"
                      f"Video description: {batch_analysis.description}\n"
                      f"Each frame has a timestamp in the top left corner.\n"
-                     f"Answer the following questions in Ukrainian: {sequence_prompt}")
+                     f"Answer the following questions in {batch_analysis.language}: {sequence_prompt}")
             
             print("batch_analysis", batch_analysis)
             print("prompt", prompt)
@@ -106,13 +106,13 @@ class OpenAIService:
 
             # Make the API call
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=batch_analysis.model,
                 # model="gpt-4o",
                 messages=[{
                     "role": "user",
                     "content": message_content
                 }],
-                max_tokens=300
+                max_tokens=500
             )
             print("response from GPT: ", response)
             return {

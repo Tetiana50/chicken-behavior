@@ -24,9 +24,11 @@ class FrameResponse(FrameInDB):
     pass
 
 class FrameBatchAnalysis(BaseModel):
-    video_id: str
-    frame_ids: List[str]
+    video_id: str = Field(..., description="Video ID")
+    frame_ids: List[str] = Field(..., description="Frame IDs")
     analysis_type: str = Field(..., description="Type of analysis to perform") 
     sequence_prompt: str = Field(..., description="Prompt for sequence analysis")
     description: str = Field(..., description="Description of the video")
     messages: List[Dict] = Field(..., description="Chat history")
+    model: str = Field(..., description="Model to use for analysis")
+    language: str = Field(..., description="Language to use for analysis")
